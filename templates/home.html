@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kidney Stone Detection - AI-Powered Medical Analysis</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <div class="container">
+        <div class="animated-icon">🏥</div>
+        <h1 class="main-title">Kidney Stone Detection</h1>
+        <p class="description">Upload a CT scan image to detect if kidney stones are present using our AI-powered analysis system.</p>
+        
+        <nav class="page-nav">
+            <a href="/" class="nav-link active">🏠 Home</a>
+            <a href="/statistics" class="nav-link">📊 Dataset Statistics</a>
+        </nav>
+
+        <!-- Quick Stats Banner -->
+        {% if dataset_stats %}
+        <div class="quick-stats-banner">
+            <h3>🔬 Our AI Model is Trained On</h3>
+            <div class="quick-stats">
+                <div class="quick-stat">
+                    <span class="stat-number">{{ dataset_stats.total_images }}</span>
+                    <span class="stat-label">Total CT Scans</span>
+                </div>
+                <div class="quick-stat">
+                    <span class="stat-number">{{ dataset_stats.dataset_info.normal_count + dataset_stats.dataset_info.stone_count }}</span>
+                    <span class="stat-label">Training Images</span>
+                </div>
+                <div class="quick-stat">
+                    <span class="stat-number">4</span>
+                    <span class="stat-label">Condition Types</span>
+                </div>
+                <div class="quick-stat">
+                    <span class="stat-number">{{ dataset_stats.class_percentages.Stone }}%</span>
+                    <span class="stat-label">Stone Cases</span>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+        
+        <!-- Upload Form -->
+        <div class="upload-section">
+            <form method="POST" action="/predict" enctype="multipart/form-data" class="upload-form">
+                <div class="file-input-wrapper">
+                    <input type="file" name="file" id="file-input" accept="image/*" required>
+                    <label for="file-input" class="file-input-label">
+                        📁 Choose CT Scan Image
+                    </label>
+                </div>
+                <div class="preview-container" id="preview-container" style="display: none;">
+                    <img id="image-preview" src="" alt="Preview">
+                </div>
+                <button type="submit" class="analyze-btn">🔍 Analyze Image</button>
+            </form>
+        </div>
+
+        <!-- Information Section -->
+        <div class="info-section">
+            <h2 class="section-title">About Kidney Stones</h2>
+            <div class="info-grid">
+                <div class="info-card">
+                    <h3>🔍 What are Kidney Stones?</h3>
+                    <p>Kidney stones are hard deposits made of minerals and salts that form inside your kidneys. They can affect any part of your urinary tract and can be extremely painful when passing through the urinary system.</p>
+                </div>
+                
+                <div class="info-card">
+                    <h3>⚠️ Common Causes</h3>
+                    <ul>
+                        <li><strong>Dehydration:</strong> Not drinking enough water</li>
+                        <li><strong>Diet:</strong> High sodium, sugar, or protein intake</li>
+                        <li><strong>Obesity:</strong> Excess weight increases risk</li>
+                        <li><strong>Medical conditions:</strong> Diabetes, high blood pressure</li>
+                        <li><strong>Family history:</strong> Genetic predisposition</li>
+                        <li><strong>Certain medications:</strong> Some supplements and drugs</li>
+                    </ul>
+                </div>
+                
+                <div class="info-card">
+                    <h3>🩺 Symptoms</h3>
+                    <ul>
+                        <li>Severe pain in the side and back</li>
+                        <li>Pain that radiates to lower abdomen and groin</li>
+                        <li>Painful urination</li>
+                        <li>Pink, red, or brown urine</li>
+                        <li>Nausea and vomiting</li>
+                        <li>Frequent urination</li>
+                        <li>Fever and chills (if infection present)</li>
+                    </ul>
+                </div>
+                
+                <div class="info-card">
+                    <h3>💊 Treatment & Remedies</h3>
+                    <ul>
+                        <li><strong>Hydration:</strong> Drink 8-12 glasses of water daily</li>
+                        <li><strong>Pain management:</strong> Over-the-counter pain relievers</li>
+                        <li><strong>Medical therapy:</strong> Alpha blockers to help pass stones</li>
+                        <li><strong>Dietary changes:</strong> Reduce sodium and animal protein</li>
+                        <li><strong>Citrus fruits:</strong> Increase citrate intake</li>
+                        <li><strong>Surgical options:</strong> For larger stones (lithotripsy, ureteroscopy)</li>
+                    </ul>
+                </div>
+                
+                <div class="info-card">
+                    <h3>🛡️ Prevention Tips</h3>
+                    <ul>
+                        <li>Stay well hydrated (clear or light yellow urine)</li>
+                        <li>Eat calcium-rich foods but limit calcium supplements</li>
+                        <li>Reduce sodium intake (less than 2,300mg daily)</li>
+                        <li>Limit animal protein consumption</li>
+                        <li>Avoid foods high in oxalates (spinach, nuts, chocolate)</li>
+                        <li>Maintain a healthy weight</li>
+                        <li>Regular exercise and healthy lifestyle</li>
+                    </ul>
+                </div>
+                
+                <div class="info-card emergency">
+                    <h3>🚨 When to Seek Emergency Care</h3>
+                    <ul>
+                        <li>Severe pain that prevents sitting still</li>
+                        <li>Pain accompanied by nausea and vomiting</li>
+                        <li>Pain with fever and chills</li>
+                        <li>Blood in urine</li>
+                        <li>Difficulty urinating</li>
+                    </ul>
+                    <p class="emergency-note"><strong>Note:</strong> This AI tool is for educational purposes only. Always consult healthcare professionals for proper diagnosis and treatment.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Image preview functionality
+        document.getElementById('file-input').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const preview = document.getElementById('image-preview');
+                    const container = document.getElementById('preview-container');
+                    preview.src = e.target.result;
+                    container.style.display = 'block';
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+    </script>
+</body>
+</html>

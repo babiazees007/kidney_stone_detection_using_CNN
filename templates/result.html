@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Analysis Result - Kidney Stone Detection</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <div class="container">
+        <div class="animated-icon">
+            {% if prediction == 'Stone Image' %}
+                ⚠️
+            {% else %}
+                ✅
+            {% endif %}
+        </div>
+        <h1 class="main-title">Analysis Complete</h1>
+        
+        <nav class="page-nav">
+            <a href="/" class="nav-link">🏠 Home</a>
+            <a href="/statistics" class="nav-link">📊 Statistics</a>
+        </nav>
+        
+        <div class="result-container">
+            <div class="image-result">
+                <h2>Uploaded Image</h2>
+                <img src="{{ url_for('static', filename='uploads/' + image_filename) }}" alt="Uploaded CT Scan" class="result-image">
+                
+                <!-- Analysis Metadata -->
+                <div class="analysis-metadata">
+                    <h3>Analysis Details</h3>
+                    {% if prediction_data %}
+                    <div class="metadata-item">
+                        <span class="metadata-label">Confidence:</span>
+                        <span class="metadata-value confidence-{{ 'high' if prediction_data.confidence > 80 else 'medium' if prediction_data.confidence > 60 else 'low' }}">
+                            {{ prediction_data.confidence }}%
+                        </span>
+                    </div>
+                    <div class="metadata-item">
+                        <span class="metadata-label">Model Type:</span>
+                        <span class="metadata-value">Binary CNN</span>
+                    </div>
+                    <div class="metadata-item">
+                        <span class="metadata-label">Processing Time:</span>
+                        <span class="metadata-value">< 1 second</span>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <div class="prediction-result">
+                <h2>AI Analysis Result</h2>
+                <div class="result-badge {% if prediction == 'Stone Image' %}stone-detected{% else %}normal-detected{% endif %}">
+                    {% if prediction == 'Stone Image' %}
+                        <div class="result-icon">🔴</div>
+                        <div class="result-text">
+                            <h3>Kidney Stone Detected</h3>
+                            <p>The AI model has identified potential kidney stones in the CT scan image.</p>
+                            {% if prediction_data %}
+                            <p class="confidence-text">Confidence: <strong>{{ prediction_data.confidence }}%</strong></p>
+                            {% endif %}
+                        </div>
+                    {% else %}
+                        <div class="result-icon">🟢</div>
+                        <div class="result-text">
+                            <h3>Normal Kidney</h3>
+                            <p>The AI model indicates no kidney stones were detected in the CT scan image.</p>
+                            {% if prediction_data %}
+                            <p class="confidence-text">Confidence: <strong>{{ prediction_data.confidence }}%</strong></p>
+                            {% endif %}
+                        </div>
+                    {% endif %}
+                </div>
+                
+                <!-- Probability Breakdown -->
+                {% if prediction_data %}
+                <div class="probability-breakdown">
+                    <h3>Detailed Probability Analysis</h3>
+                    <div class="probability-bars">
+                        <div class="probability-item">
+                            <div class="prob-label">
+                                <span class="prob-icon">🟢</span>
+                                <span>Normal Kidney</span>
+                            </div>
+                            <div class="prob-bar-container">
+                                <div class="prob-bar normal-bar" style="width: {{ prediction_data.probabilities.normal }}%"></div>
+                                <span class="prob-value">{{ prediction_data.probabilities.normal }}%</span>
+                            </div>
+                        </div>
+                        <div class="probability-item">
+                            <div class="prob-label">
+                                <span class="prob-icon">🔴</span>
+                                <span>Kidney Stone</span>
+                            </div>
+                            <div class="prob-bar-container">
+                                <div class="prob-bar stone-bar" style="width: {{ prediction_data.probabilities.stone }}%"></div>
+                                <span class="prob-value">{{ prediction_data.probabilities.stone }}%</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+                
+                <!-- Dataset Context -->
+                {% if dataset_stats %}
+                <div class="dataset-context">
+                    <h3>📊 Dataset Context</h3>
+                    <p>This analysis is based on a model trained with:</p>
+                    <div class="context-stats">
+                        <div class="context-item">
+                            <span class="context-number">{{ dataset_stats.dataset_info.normal_count }}</span>
+                            <span class="context-label">Normal Cases</span>
+                        </div>
+                        <div class="context-item">
+                            <span class="context-number">{{ dataset_stats.dataset_info.stone_count }}</span>
+                            <span class="context-label">Stone Cases</span>
+                        </div>
+                        <div class="context-item">
+                            <span class="context-number">{{ dataset_stats.total_images }}</span>
+                            <span class="context-label">Total Dataset</span>
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+                
+                {% if prediction == 'Stone Image' %}
+                <div class="recommendation-box stone-recommendations">
+                    <h3>🩺 Recommended Actions</h3>
+                    <ul>
+                        <li><strong>Consult a Urologist:</strong> Schedule an appointment immediately for professional evaluation</li>
+                        <li><strong>Stay Hydrated:</strong> Drink plenty of water (8-12 glasses daily)</li>
+                        <li><strong>Pain Management:</strong> Use over-the-counter pain relievers as needed</li>
+                        <li><strong>Dietary Adjustments:</strong> Reduce sodium and limit animal protein intake</li>
+                        <li><strong>Monitor Symptoms:</strong> Watch for severe pain, fever, or difficulty urinating</li>
+                    </ul>
+                    <div class="emergency-alert">
+                        <strong>⚠️ Seek immediate medical attention if you experience:</strong>
+                        <ul>
+                            <li>Severe, unbearable pain</li>
+                            <li>Fever and chills</li>
+                            <li>Blood in urine</li>
+                            <li>Inability to urinate</li>
+                        </ul>
+                    </div>
+                </div>
+                {% else %}
+                <div class="recommendation-box normal-recommendations">
+                    <h3>✅ Maintain Kidney Health</h3>
+                    <ul>
+                        <li><strong>Continue Healthy Habits:</strong> Keep up with good hydration and diet</li>
+                        <li><strong>Regular Check-ups:</strong> Schedule routine medical examinations</li>
+                        <li><strong>Prevention:</strong> Follow kidney stone prevention guidelines</li>
+                        <li><strong>Stay Active:</strong> Maintain regular exercise and healthy weight</li>
+                    </ul>
+                </div>
+                {% endif %}
+                
+                <div class="disclaimer">
+                    <h4>⚠️ Important Medical Disclaimer</h4>
+                    <p>This AI analysis is for educational and screening purposes only. It should not replace professional medical diagnosis or treatment. Always consult with qualified healthcare professionals for accurate diagnosis and appropriate treatment plans.</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="action-buttons">
+            <a href="/" class="cta primary">🔄 Analyze Another Image</a>
+            <button onclick="window.print()" class="cta secondary">🖨️ Print Results</button>
+        </div>
+    </div>
+
+    <style>
+        .result-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin: 30px 0;
+            align-items: start;
+        }
+        
+        @media (max-width: 768px) {
+            .result-container {
+                grid-template-columns: 1fr;
+                gap: 20px;
+            }
+        }
+        
+        .image-result, .prediction-result {
+            background: #fff;
+            padding: 20px;
+            border-radius: 15px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            border: 2px solid #e0e0e0;
+        }
+        
+        .result-image {
+            width: 100%;
+            max-width: 300px;
+            height: auto;
+            border-radius: 10px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+            margin: 10px 0;
+        }
+        
+        .result-badge {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            padding: 20px;
+            border-radius: 12px;
+            margin: 20px 0;
+        }
+        
+        .stone-detected {
+            background: linear-gradient(135deg, #ffebee 0%, #ffcdd2 100%);
+            border: 2px solid #f44336;
+        }
+        
+        .normal-detected {
+            background: linear-gradient(135deg, #e8f5e8 0%, #c8e6c9 100%);
+            border: 2px solid #4caf50;
+        }
+        
+        .result-icon {
+            font-size: 40px;
+            flex-shrink: 0;
+        }
+        
+        .result-text h3 {
+            margin: 0 0 10px 0;
+            font-size: 24px;
+        }
+        
+        .result-text p {
+            margin: 0;
+            font-size: 16px;
+            color: #666;
+        }
+        
+        .recommendation-box {
+            margin: 20px 0;
+            padding: 20px;
+            border-radius: 12px;
+            border-left: 5px solid;
+        }
+        
+        .stone-recommendations {
+            background: #fff3e0;
+            border-left-color: #ff9800;
+        }
+        
+        .normal-recommendations {
+            background: #f1f8e9;
+            border-left-color: #8bc34a;
+        }
+        
+        .emergency-alert {
+            background: #ffebee;
+            border: 2px solid #f44336;
+            border-radius: 8px;
+            padding: 15px;
+            margin-top: 15px;
+        }
+        
+        .disclaimer {
+            background: #f5f5f5;
+            border: 2px solid #9e9e9e;
+            border-radius: 8px;
+            padding: 15px;
+            margin-top: 20px;
+        }
+        
+        .disclaimer h4 {
+            margin: 0 0 10px 0;
+            color: #d32f2f;
+        }
+        
+        .action-buttons {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            margin-top: 30px;
+            flex-wrap: wrap;
+        }
+        
+        .cta.primary {
+            background: linear-gradient(90deg, #7b1f33 60%, #b83a56 100%);
+        }
+        
+        .cta.secondary {
+            background: linear-gradient(90deg, #424242 60%, #616161 100%);
+            text-decoration: none;
+            border: none;
+            font-family: 'Montserrat', sans-serif;
+            cursor: pointer;
+        }
+        
+        @media print {
+            .action-buttons, .cta {
+                display: none !important;
+            }
+        }
+    </style>
+</body>
+</html>
